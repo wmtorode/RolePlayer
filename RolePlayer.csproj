@@ -50,7 +50,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\BehaviorRoleDef.cs" />
     <Compile Include="Data\Logger.cs" />
+    <Compile Include="Features\BehaviorVariableManager.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
