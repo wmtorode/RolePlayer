@@ -61,14 +61,17 @@ namespace RolePlayer.Features
                     if (behaviorVariableScope == null)
                     {
                         scopesByRole[behaviourDef.roleTag] = new BehaviorVariableScope();
+                        behaviorVariableScope.FromJSON(jData);
+                        Main.modLog.LogMessage($"Loaded {behaviourDef.behaviorFile} for tag: {behaviourDef.roleTag}");
                     }
-                    behaviorVariableScope.FromJSON(jData);
+                    
                     foreach (AIMood mood in behaviourDef.moods)
                     {
                         if (mood != AIMood.Undefined)
                         {
                             behaviorVariableScope.ScopesByMood[mood] = new BehaviorVariableScope();
                             behaviorVariableScope.ScopesByMood[mood].FromJSON(jData);
+                            Main.modLog.LogMessage($"Applied {behaviourDef.behaviorFile} for tag: {behaviourDef.roleTag}, with Mood {mood.ToString()}");
                         }
                     }
                 }
