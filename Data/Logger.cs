@@ -37,10 +37,16 @@ namespace RolePlayer.Data
             logStream.WriteLine($"INFO: {now} - {message}");
         }
 
+        public void LogError(string message)
+        {
+            string now = DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture);
+            logStream.WriteLine($"ERROR: {now} - {message}");
+        }
+
         public void LogException(Exception error)
         {
             string now = DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture);
-            logStream.WriteLine($"ERROR: {now} - {error}");
+            logStream.WriteLine($"CRITICAL: {now} - {error}");
         }
 
     }

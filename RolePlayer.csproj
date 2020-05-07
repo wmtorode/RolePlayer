@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Data\BehaviorRoleDef.cs" />
     <Compile Include="Data\Logger.cs" />
+    <Compile Include="Data\Settings.cs" />
     <Compile Include="Features\BehaviorVariableManager.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

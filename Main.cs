@@ -6,19 +6,37 @@ using System.Threading.Tasks;
 using System.Reflection;
 using RolePlayer.Data;
 using Harmony;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace RolePlayer
 {
     public static class Main
     {
         internal static Logger modLog;
+        internal static Settings settings;
+        internal static string modDir;
 
-        public static void Init(string modDir, string settingsJSON)
+        public static void Init(string modDirectory, string settingsJSON)
         {
             var harmony = HarmonyInstance.Create("ca.jwolf.RolePlayer");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
 
+            modDir = modDirectory;
             modLog = new Logger(modDir, "RolePlayer", true);
+
+            try
+            {
+                using(StreamReader reader = new StreamReader($"{modDir}/settings.json"))
+                {
+                    string jdata = reader.ReadToEnd();
+                    settings = JsonConvert.DeserializeObject<Settings>(jdata);
+                }
+            }
+            catch (Exception ex)
+            {
+                modLog.LogException(ex);
+            }
 
         }
     }
