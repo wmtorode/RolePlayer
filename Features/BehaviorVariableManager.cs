@@ -102,44 +102,46 @@ namespace RolePlayer
             {
                 if (scopesByRole.ContainsKey(tag))
                 {
+                    Main.modLog.LogMessage($"setting actor: {actor.uid} to role tag: {tag}");
                     actorRoleCache[actor.uid] = tag;
                     return tag;
                 }
             }
             actorRoleCache[actor.uid] = (string) null;
+            Main.modLog.LogMessage("actor has no defined role tag, reverting to vanilla control");
             return (string) null;
         }
 
         public BehaviorVariableValue getBehaviourVariable(AbstractActor actor, BehaviorVariableName name)
         {
-            string tag = getActorTag(actor);
-            if (tag != null)
+            try
             {
-
-                if (scopesByRole.ContainsKey(tag))
+                string tag = getActorTag(actor);
+                if (tag != null)
                 {
-                    BehaviorVariableScope roleScope = scopesByRole[tag];
-                    BehaviorVariableValue roleValue = roleScope.GetVariableWithMood(name, actor.BehaviorTree.mood);
-                    if (roleValue != null)
+
+                    if (scopesByRole.ContainsKey(tag))
                     {
-                        if (Main.settings.debug)
+                        BehaviorVariableScope roleScope = scopesByRole[tag];
+                        BehaviorVariableValue roleValue = roleScope.GetVariableWithMood(name, actor.BehaviorTree.mood);
+                        if (roleValue != null)
                         {
-                            Main.modLog.DebugMessage($"Hit for Var: {name.ToString()}");
+                            if (Main.settings.debug)
+                            {
+                                Main.modLog.DebugMessage($"Hit for Var: {name.ToString()}");
+                            }
+                            return roleValue;
                         }
-                        return roleValue;
+                    }
+                    if (Main.settings.debug)
+                    {
+                        Main.modLog.DebugMessage($"Miss for Var: {name.ToString()}");
                     }
                 }
-                if (Main.settings.debug)
-                {
-                    Main.modLog.DebugMessage($"Hit for Var: {name.ToString()}");
-                }
             }
-            else
+            catch (Exception ex)
             {
-                if (Main.settings.debug)
-                {
-                    Main.modLog.DebugMessage("actor has no defined role tag");
-                }
+                Main.modLog.LogException(ex);
             }
             return (BehaviorVariableValue) null;
         }
