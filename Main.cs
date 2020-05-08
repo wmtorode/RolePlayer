@@ -19,9 +19,7 @@ namespace RolePlayer
 
         public static void Init(string modDirectory, string settingsJSON)
         {
-            var harmony = HarmonyInstance.Create("ca.jwolf.RolePlayer");
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
-
+         
             modDir = modDirectory;
             modLog = new Logger(modDir, "RolePlayer", true);
 
@@ -32,11 +30,17 @@ namespace RolePlayer
                     string jdata = reader.ReadToEnd();
                     settings = JsonConvert.DeserializeObject<Settings>(jdata);
                 }
+                BehaviorVariableManager.Instance.initialize();
+
             }
+
             catch (Exception ex)
             {
                 modLog.LogException(ex);
             }
+
+            var harmony = HarmonyInstance.Create("ca.jwolf.RolePlayer");
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
 
         }
     }

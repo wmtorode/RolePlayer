@@ -9,14 +9,14 @@ using RolePlayer;
 using RolePlayer.Data;
 using BattleTech;
 
-namespace RolePlayer.Features
+namespace RolePlayer
 {
     public class BehaviorVariableManager
 
     {
         private static BehaviorVariableManager instance;
         private Dictionary<string, BehaviorVariableScope> scopesByRole;
-        private Dictionary<string, List<string>> actorRoleCache;
+        private Dictionary<string, string> actorRoleCache;
 
         public static BehaviorVariableManager Instance
         {
@@ -30,6 +30,7 @@ namespace RolePlayer.Features
 
         public void initialize()
         {
+            actorRoleCache = new Dictionary<string, string>();
             loadBehaviourScopes();
         }
 
@@ -50,9 +51,9 @@ namespace RolePlayer.Features
         public void loadBehaviourScopes()
         {
             scopesByRole = new Dictionary<string, BehaviorVariableScope>();
-            foreach(BehaviorRoleDef behaviourDef in Main.settings.behaviours)
+            foreach (BehaviorRoleDef behaviourDef in Main.settings.behaviours)
             {
-                string filePath = $"{Main.modDir}/{Main.settings.behaviourDirectory}/{behaviourDef.behaviorFile}.json";
+                string filePath = $"{Main.modDir}/{Main.settings.behaviourDirectory}/{behaviourDef.behaviourFile}.json";
                 if (File.Exists(filePath))
                 {
                     string jData = File.ReadAllText(filePath);
@@ -60,9 +61,10 @@ namespace RolePlayer.Features
                     BehaviorVariableScope behaviorVariableScope = getScope(behaviourDef.roleTag);
                     if (behaviorVariableScope == null)
                     {
-                        scopesByRole[behaviourDef.roleTag] = new BehaviorVariableScope();
+                        behaviorVariableScope = new BehaviorVariableScope();
                         behaviorVariableScope.FromJSON(jData);
-                        Main.modLog.LogMessage($"Loaded {behaviourDef.behaviorFile} for tag: {behaviourDef.roleTag}");
+                        scopesByRole[behaviourDef.roleTag] = behaviorVariableScope;
+                        Main.modLog.LogMessage($"Loaded {behaviourDef.behaviourFile} for tag: {behaviourDef.roleTag}");
                     }
                     
                     foreach (AIMood mood in behaviourDef.moods)
@@ -71,37 +73,74 @@ namespace RolePlayer.Features
                         {
                             behaviorVariableScope.ScopesByMood[mood] = new BehaviorVariableScope();
                             behaviorVariableScope.ScopesByMood[mood].FromJSON(jData);
-                            Main.modLog.LogMessage($"Applied {behaviourDef.behaviorFile} for tag: {behaviourDef.roleTag}, with Mood {mood.ToString()}");
+                            Main.modLog.LogMessage($"Applied {behaviourDef.behaviourFile} for tag: {behaviourDef.roleTag}, with Mood {mood.ToString()}");
                         }
                     }
                 }
                 else
                 {
-                    Main.modLog.LogError($"Missing Behaviour file: {behaviourDef.behaviorFile}");
+                    Main.modLog.LogError($"Missing Behaviour file: {behaviourDef.behaviourFile}");
                 }
             }
         }
 
-        private List<string> getActorTags(AbstractActor actor)
+        private string getActorTag(AbstractActor actor)
         {
             if (actorRoleCache.ContainsKey(actor.uid))
             {
                 return actorRoleCache[actor.uid];
             }
             Main.modLog.DebugMessage($"Cache Miss: {actor.uid}");
-            actorRoleCache[actor.uid] = actor.GetTags().ToArray().ToList();
+            List<string> tags = actor.GetTags().ToArray().ToList();
 
             Mech mech = actor as Mech;
             if(mech != null)
             {
-                actorRoleCache[actor.uid] = actorRoleCache[actor.uid].Concat(mech.MechDef.MechTags.ToArray().ToList()).ToList();
+                tags = tags.Concat(mech.MechDef.MechTags.ToArray().ToList()).ToList();
             }
-            return actorRoleCache[actor.uid];
+            foreach (string tag in tags)
+            {
+                if (scopesByRole.ContainsKey(tag))
+                {
+                    actorRoleCache[actor.uid] = tag;
+                    return tag;
+                }
+            }
+            actorRoleCache[actor.uid] = (string) null;
+            return (string) null;
         }
 
-        public BehaviorVariableValue getBehaviourVariable(AbstractActor actor)
+        public BehaviorVariableValue getBehaviourVariable(AbstractActor actor, BehaviorVariableName name)
         {
-            List<string> tags = getActorTags(actor);
+            string tag = getActorTag(actor);
+            if (tag != null)
+            {
+
+                if (scopesByRole.ContainsKey(tag))
+                {
+                    BehaviorVariableScope roleScope = scopesByRole[tag];
+                    BehaviorVariableValue roleValue = roleScope.GetVariableWithMood(name, actor.BehaviorTree.mood);
+                    if (roleValue != null)
+                    {
+                        if (Main.settings.debug)
+                        {
+                            Main.modLog.DebugMessage($"Hit for Var: {name.ToString()}");
+                        }
+                        return roleValue;
+                    }
+                }
+                if (Main.settings.debug)
+                {
+                    Main.modLog.DebugMessage($"Hit for Var: {name.ToString()}");
+                }
+            }
+            else
+            {
+                if (Main.settings.debug)
+                {
+                    Main.modLog.DebugMessage("actor has no defined role tag");
+                }
+            }
             return (BehaviorVariableValue) null;
         }
 

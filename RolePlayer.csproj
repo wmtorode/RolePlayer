@@ -55,6 +55,8 @@
     <Compile Include="Data\Settings.cs" />
     <Compile Include="Features\BehaviorVariableManager.cs" />
     <Compile Include="Main.cs" />
+    <Compile Include="Patches\BehaviorTree.cs" />
+    <Compile Include="Patches\Contract.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

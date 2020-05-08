@@ -11,7 +11,7 @@ namespace RolePlayer.Data
     public class BehaviorRoleDef
     {
         public string roleTag;
-        public string behaviorFile;
+        public string behaviourFile;
         public List<AIMood> moods;
     }
 }
