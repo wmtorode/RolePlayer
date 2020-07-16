@@ -16,7 +16,7 @@ namespace RolePlayer
     {
         private static BehaviorVariableManager instance;
         private Dictionary<string, BehaviorVariableScope> scopesByRole;
-        private Dictionary<string, string> actorRoleCache;
+        private Dictionary<string, List<BehaviorVariableScope>> actorRoleCache;
 
         public static BehaviorVariableManager Instance
         {
@@ -30,7 +30,7 @@ namespace RolePlayer
 
         public void initialize()
         {
-            actorRoleCache = new Dictionary<string, string>();
+            actorRoleCache = new Dictionary<string, List<BehaviorVariableScope>>();
             loadBehaviourScopes();
         }
 
@@ -84,7 +84,7 @@ namespace RolePlayer
             }
         }
 
-        private string getActorTag(AbstractActor actor)
+        private List<BehaviorVariableScope> getActorTags(AbstractActor actor)
         {
             if (actorRoleCache.ContainsKey(actor.uid))
             {
@@ -98,31 +98,50 @@ namespace RolePlayer
             {
                 tags = tags.Concat(mech.MechDef.MechTags.ToArray().ToList()).ToList();
             }
+            else
+            {
+                Vehicle vehicle = actor as Vehicle;
+                if(vehicle != null)
+                {
+                    tags = tags.Concat(vehicle.VehicleDef.VehicleTags.ToArray().ToList()).ToList();
+                }
+            }
+            bool bAdded = false;
             foreach (string tag in tags)
             {
                 if (scopesByRole.ContainsKey(tag))
                 {
-                    Main.modLog.LogMessage($"setting actor: {actor.uid} to role tag: {tag}");
-                    actorRoleCache[actor.uid] = tag;
-                    return tag;
+                    if (!bAdded)
+                    {
+                        actorRoleCache[actor.uid] = new List<BehaviorVariableScope>();
+                        bAdded = true;
+                    }
+                    Main.modLog.LogMessage($"adding role tag: {tag}, to actor: {actor.uid}");
+                    actorRoleCache[actor.uid].Add(scopesByRole[tag]);
+                    if (!Main.settings.allowMultiMatch)
+                    {
+                        break;
+                    }
                 }
             }
-            actorRoleCache[actor.uid] = (string) null;
-            Main.modLog.LogMessage("actor has no defined role tag, reverting to vanilla control");
-            return (string) null;
+            if (!bAdded)
+            {
+                actorRoleCache[actor.uid] = (List<BehaviorVariableScope>) null;
+                Main.modLog.LogMessage("actor has no defined role tag, reverting to vanilla control");
+            }
+            return actorRoleCache[actor.uid];
         }
 
         public BehaviorVariableValue getBehaviourVariable(AbstractActor actor, BehaviorVariableName name)
         {
             try
             {
-                string tag = getActorTag(actor);
-                if (tag != null)
+                List<BehaviorVariableScope> tags = getActorTags(actor);
+                if (tags != null)
                 {
 
-                    if (scopesByRole.ContainsKey(tag))
-                    {
-                        BehaviorVariableScope roleScope = scopesByRole[tag];
+                    foreach (BehaviorVariableScope roleScope in tags)
+                    { 
                         BehaviorVariableValue roleValue = roleScope.GetVariableWithMood(name, actor.BehaviorTree.mood);
                         if (roleValue != null)
                         {
