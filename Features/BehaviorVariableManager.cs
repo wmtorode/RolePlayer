@@ -90,7 +90,7 @@ namespace RolePlayer
             {
                 return actorRoleCache[actor.uid];
             }
-            Main.modLog.DebugMessage($"Cache Miss: {actor.uid}");
+            Main.modLog.DebugMessage($"Cache Miss: {actor.uid}, {actor.Description.Id}");
             List<string> tags = actor.GetTags().ToArray().ToList();
 
             Mech mech = actor as Mech;
@@ -127,7 +127,7 @@ namespace RolePlayer
             if (!bAdded)
             {
                 actorRoleCache[actor.uid] = (List<BehaviorVariableScope>) null;
-                Main.modLog.LogMessage("actor has no defined role tag, reverting to vanilla control");
+                Main.modLog.LogMessage($"actor {actor.uid}({actor.Description.Id}) has no defined role tag, reverting to vanilla control");
             }
             return actorRoleCache[actor.uid];
         }
@@ -147,14 +147,14 @@ namespace RolePlayer
                         {
                             if (Main.settings.debug)
                             {
-                                Main.modLog.DebugMessage($"Hit for Var: {name.ToString()}");
+                                Main.modLog.DebugMessage($"Hit for Var: {name.ToString()}, {actor.uid}({actor.Description.Id})");
                             }
                             return roleValue;
                         }
                     }
                     if (Main.settings.debug)
                     {
-                        Main.modLog.DebugMessage($"Miss for Var: {name.ToString()}");
+                        Main.modLog.DebugMessage($"Miss for Var: {name.ToString()}, {actor.uid}({actor.Description.Id})");
                     }
                 }
             }
