@@ -1,5 +1,4 @@
 ﻿using RolePlayer;
-using Harmony;
 using BattleTech;
 
 namespace RolePlayer.Patches
@@ -7,16 +6,22 @@ namespace RolePlayer.Patches
         [HarmonyPatch(typeof(BehaviorTree), "GetBehaviorVariableValue")]
         public static class BehaviorTree_GetBehaviorVariableValue_Patch
         {
-            public static bool Prefix(BehaviorTree __instance, BehaviorVariableName name, ref BehaviorVariableValue __result)
+            public static void Prefix(ref bool __runOriginal, BehaviorTree __instance, BehaviorVariableName name, ref BehaviorVariableValue __result)
             {
+                
+                if (!__runOriginal)
+                {
+                    return;
+                }
+                
                 var value = BehaviorVariableManager.Instance.getBehaviourVariable(__instance.unit, name);
                 if (value == null)
                 {
-                    return true;
+                    return;
                 }
 
                 __result = value;
-                return false;
+                __runOriginal = false;
             }
         }
 }

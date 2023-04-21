@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
 using System.IO;
-using RolePlayer;
 using RolePlayer.Data;
 using BattleTech;
 
@@ -90,7 +86,11 @@ namespace RolePlayer
             {
                 return actorRoleCache[actor.uid];
             }
-            Main.modLog.DebugMessage($"Cache Miss: {actor.uid}, {actor.Description.Id}");
+            
+            if (Main.settings.debug)
+            {
+                Main.modLog.DebugMessage($"Cache Miss: {actor.uid}, {actor.Description.Id}");
+            }
             List<string> tags = actor.GetTags().ToArray().ToList();
 
             Mech mech = actor as Mech;

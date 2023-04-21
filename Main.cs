@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Reflection;
 using RolePlayer.Data;
-using Harmony;
 using Newtonsoft.Json;
 using System.IO;
 
@@ -38,10 +33,9 @@ namespace RolePlayer
             {
                 modLog.LogException(ex);
             }
-
-            var harmony = HarmonyInstance.Create("ca.jwolf.RolePlayer");
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
-
+            
+            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), "ca.jwolf.RolePlayer");
+            
         }
     }
 }
